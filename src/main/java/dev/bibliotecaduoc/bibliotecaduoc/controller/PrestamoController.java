@@ -7,60 +7,66 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/prestamos")
 public class PrestamoController {
 
-    private final PrestamoService prestamoService;
+    private final PrestamoService service;
 
-    public PrestamoController(PrestamoService prestamoService) {
-        this.prestamoService = prestamoService;
+    public PrestamoController(PrestamoService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public ResponseEntity<List<Prestamo>> listarPrestamos() {
-        return ResponseEntity.ok(prestamoService.obtenerTodos());
+    public ResponseEntity<List<Prestamo>> listar() {
+        return ResponseEntity.ok(service.obtenerTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerPrestamoPorId(@PathVariable int id) {
-        return prestamoService.obtenerPorId(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
+    public ResponseEntity<?> obtener(@PathVariable int id) {
+        return service.obtenerPorId(id)
+                .<ResponseEntity<?>>map(prestamo -> ResponseEntity.ok(prestamo))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Préstamo no encontrado."));
+                        .body(Map.of("mensaje", "No encontrado")));
     }
 
     @PostMapping
-    public ResponseEntity<?> guardarPrestamo(@RequestBody Prestamo prestamo) {
+    public ResponseEntity<?> crear(@RequestBody Prestamo p) {
         try {
-            Prestamo nuevoPrestamo = prestamoService.guardar(prestamo);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoPrestamo);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            Prestamo creado = service.guardar(p);
+            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarPrestamo(@PathVariable int id, @RequestBody Prestamo prestamo) {
+    public ResponseEntity<?> actualizar(@PathVariable int id, @RequestBody Prestamo p) {
         try {
-            return prestamoService.actualizar(id, prestamo)
-                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+            return service.actualizar(id, p)
+                    .<ResponseEntity<?>>map(actualizado -> ResponseEntity.ok(actualizado))
                     .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body("Préstamo no encontrado."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+                            .body(Map.of("mensaje", "No encontrado")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarPrestamo(@PathVariable int id) {
-        boolean eliminado = prestamoService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable int id) {
+        boolean eliminado = service.eliminar(id);
 
         if (eliminado) {
             return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("mensaje", "No encontrado"));
     }
 }

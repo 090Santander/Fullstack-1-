@@ -1,24 +1,30 @@
 package dev.bibliotecaduoc.bibliotecaduoc.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 
 public class Prestamo {
 
-    private int idPrestamo;
-    private int idLibro;
+    private Integer idPrestamo;
+    private Integer idLibro;
     private String runSolicitante;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaSolicitud;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaEntrega;
-    private int cantidadDias;
-    private int multas;
+
+    private Integer cantidadDias;
+    private Integer multas;
 
     public Prestamo() {
         this.multas = 0;
     }
 
-    public Prestamo(int idPrestamo, int idLibro, String runSolicitante,
+    public Prestamo(Integer idPrestamo, Integer idLibro, String runSolicitante,
                     LocalDate fechaSolicitud, LocalDate fechaEntrega,
-                    int cantidadDias, int multas) {
+                    Integer cantidadDias, Integer multas) {
         this.idPrestamo = idPrestamo;
         this.idLibro = idLibro;
         this.runSolicitante = runSolicitante;
@@ -28,19 +34,19 @@ public class Prestamo {
         this.multas = multas;
     }
 
-    public int getIdPrestamo() {
+    public Integer getIdPrestamo() {
         return idPrestamo;
     }
 
-    public void setIdPrestamo(int idPrestamo) {
+    public void setIdPrestamo(Integer idPrestamo) {
         this.idPrestamo = idPrestamo;
     }
 
-    public int getIdLibro() {
+    public Integer getIdLibro() {
         return idLibro;
     }
 
-    public void setIdLibro(int idLibro) {
+    public void setIdLibro(Integer idLibro) {
         this.idLibro = idLibro;
     }
 
@@ -68,19 +74,19 @@ public class Prestamo {
         this.fechaEntrega = fechaEntrega;
     }
 
-    public int getCantidadDias() {
+    public Integer getCantidadDias() {
         return cantidadDias;
     }
 
-    public void setCantidadDias(int cantidadDias) {
+    public void setCantidadDias(Integer cantidadDias) {
         this.cantidadDias = cantidadDias;
     }
 
-    public int getMultas() {
+    public Integer getMultas() {
         return multas;
     }
 
-    public void setMultas(int multas) {
+    public void setMultas(Integer multas) {
         this.multas = multas;
     }
 }

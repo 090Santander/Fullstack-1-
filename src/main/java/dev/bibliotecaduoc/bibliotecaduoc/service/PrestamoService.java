@@ -31,53 +31,54 @@ public class PrestamoService {
     public Prestamo guardar(Prestamo prestamo) {
         validarPrestamo(prestamo);
         prestamo.setIdPrestamo(0);
-        prestamo.setMultas(0);
+
+        if (prestamo.getMultas() == null || prestamo.getMultas() < 0) {
+            prestamo.setMultas(0);
+        }
+
         return prestamoRepository.save(prestamo);
     }
 
-    public Optional<Prestamo> actualizar(int idPrestamo, Prestamo prestamoActualizado) {
-        Optional<Prestamo> prestamoExistente = prestamoRepository.findById(idPrestamo);
+    public Optional<Prestamo> actualizar(int idPrestamo, Prestamo nuevo) {
+        Optional<Prestamo> existente = prestamoRepository.findById(idPrestamo);
 
-        if (prestamoExistente.isPresent()) {
-            validarPrestamo(prestamoActualizado);
+        if (existente.isEmpty()) return Optional.empty();
 
-            Prestamo prestamo = prestamoExistente.get();
-            prestamo.setIdLibro(prestamoActualizado.getIdLibro());
-            prestamo.setRunSolicitante(prestamoActualizado.getRunSolicitante());
-            prestamo.setFechaSolicitud(prestamoActualizado.getFechaSolicitud());
-            prestamo.setFechaEntrega(prestamoActualizado.getFechaEntrega());
-            prestamo.setCantidadDias(prestamoActualizado.getCantidadDias());
-            prestamo.setMultas(prestamoActualizado.getMultas());
+        validarPrestamo(nuevo);
 
-            return Optional.of(prestamoRepository.save(prestamo));
-        }
+        Prestamo p = existente.get();
+        p.setIdLibro(nuevo.getIdLibro());
+        p.setRunSolicitante(nuevo.getRunSolicitante());
+        p.setFechaSolicitud(nuevo.getFechaSolicitud());
+        p.setFechaEntrega(nuevo.getFechaEntrega());
+        p.setCantidadDias(nuevo.getCantidadDias());
+        p.setMultas(nuevo.getMultas() == null ? 0 : Math.max(nuevo.getMultas(), 0));
 
-        return Optional.empty();
+        return Optional.of(prestamoRepository.save(p));
     }
 
     public boolean eliminar(int idPrestamo) {
         return prestamoRepository.deleteById(idPrestamo);
     }
 
-    private void validarPrestamo(Prestamo prestamo) {
-        if (prestamo.getRunSolicitante() == null || prestamo.getRunSolicitante().trim().isEmpty()) {
-            throw new IllegalArgumentException("El RUN del solicitante es obligatorio.");
-        }
+    private void validarPrestamo(Prestamo p) {
+        if (p.getIdLibro() == null || p.getIdLibro() <= 0)
+            throw new IllegalArgumentException("El id del libro es obligatorio.");
 
-        if (prestamo.getFechaSolicitud() == null) {
-            throw new IllegalArgumentException("La fecha de solicitud es obligatoria.");
-        }
+        if (p.getRunSolicitante() == null || p.getRunSolicitante().isBlank())
+            throw new IllegalArgumentException("El RUN es obligatorio.");
 
-        if (prestamo.getCantidadDias() <= 0) {
-            throw new IllegalArgumentException("La cantidad de días debe ser mayor a 0.");
-        }
+        if (p.getFechaSolicitud() == null)
+            throw new IllegalArgumentException("La fecha es obligatoria.");
 
-        boolean libroExiste = libroRepository.findAll().stream()
+        if (p.getCantidadDias() == null || p.getCantidadDias() <= 0)
+            throw new IllegalArgumentException("Días inválidos.");
+
+        boolean existe = libroRepository.findAll().stream()
                 .map(Libro::getId)
-                .anyMatch(id -> id == prestamo.getIdLibro());
+                .anyMatch(id -> id == p.getIdLibro());
 
-        if (!libroExiste) {
-            throw new IllegalArgumentException("El libro asociado no existe.");
-        }
+        if (!existe)
+            throw new IllegalArgumentException("El libro no existe.");
     }
 }
